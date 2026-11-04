@@ -5,8 +5,8 @@ export default defineConfig({
     outDir: 'dist',
     lib: {
       entry: 'src/main.js',
-      name: 'BEXTool',
-      fileName: () => 'qa-suite.bundle.js',
+      name: 'bextool',
+      fileName: () => 'bextool.bundle.js',
       formats: ['iife'], // Se autoejecuta al cargarse
     },
     cssCodeSplit: false,

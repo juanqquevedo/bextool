@@ -21,86 +21,73 @@ export function initPistolModule(container, sourceUrl) {
 
   container.innerHTML = `
     <div class="pistol-form">
-      <label class="field-label">Sitio Destino (Fijo):</label>
+      <label class="field-label">Sitio Destino:</label>
       <input type="text" class="field-input readonly-field" readonly value="${PISDESK_BASE}" />
 
-      <label class="field-label">URL Limpia detectada:</label>
+      <label class="field-label">URL Limpia (sin parámetros ni anclas):</label>
       <input type="text" class="field-input readonly-field" readonly value="${clean}" />
 
       <label class="field-label">Marca Detectada:</label>
       <input type="text" class="field-input readonly-field" readonly value="${detectedBrand}" />
 
       <div class="actions-group">
-        <button id="btn-fire-pisdesk" class="action-btn">🚀 Disparar en PISDesk (1 Solo Clic)</button>
+        <button id="btn-fire-pisdesk" class="action-btn">🚀 Inspeccionar en Visor</button>
       </div>
-      
-      <div id="pistol-log" class="log-console">Listo para disparar.</div>
+
+      <div id="pistol-log" class="log-console">Listo para cargar vista previa.</div>
+
+      <!-- Visor Integrado -->
+      <div id="frame-wrapper" class="frame-wrapper" style="display: none;">
+        <div class="frame-header">
+          <span class="frame-title">🖥️ Vista Previa PISDesk</span>
+          <span class="frame-badge">${detectedBrand}</span>
+        </div>
+        <iframe id="pisdesk-inline-frame" name="pisdesk_inline_frame" class="inline-frame"></iframe>
+      </div>
     </div>
   `;
 
   const btnFire = container.querySelector('#btn-fire-pisdesk');
   const logBox = container.querySelector('#pistol-log');
+  const frameWrapper = container.querySelector('#frame-wrapper');
+  const inlineFrame = container.querySelector('#pisdesk-inline-frame');
 
-  btnFire.addEventListener('click', async () => {
-    logBox.textContent = 'Configurando marca y abriendo inspección...';
+  btnFire.addEventListener('click', () => {
+    btnFire.disabled = true;
+    logBox.textContent = 'Enviando petición a PISDesk...';
+    frameWrapper.style.display = 'block';
 
-    // 1. Determinar el endpoint final según la marca
-    let targetFormaction = '/inspectOtherCPBrand/preview';
-    if (detectedBrand === 'Colgate') targetFormaction = '/inspectColgate/preview';
-    if (detectedBrand === 'Hills') targetFormaction = '/inspectHills/preview';
+    // Determinar la acción según la marca detectada
+    let targetEndpoint = '/inspectOtherCPBrand/preview';
+    if (detectedBrand === 'Colgate') targetEndpoint = '/inspectColgate/preview';
+    if (detectedBrand === 'Hills') targetEndpoint = '/inspectHills/preview';
 
-    // 2. Establecer una ventana objetivo con un nombre único
-    const targetWindowName = 'PISDesk_Target_Tab';
+    // Formulario multipart directo apuntando al iframe integrado
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${PISDESK_BASE}${targetEndpoint}`;
+    form.enctype = 'multipart/form-data';
+    form.target = 'pisdesk_inline_frame';
 
-    // 3. Crear el formulario 1: Selección de marca (se envía a un iframe invisible para fijar la sesión/cookie)
-    const hiddenIframe = document.createElement('iframe');
-    hiddenIframe.name = 'pisdesk_session_frame';
-    hiddenIframe.style.display = 'none';
-    document.body.appendChild(hiddenIframe);
-
-    const formBrand = document.createElement('form');
-    formBrand.method = 'POST';
-    formBrand.action = `${PISDESK_BASE}/selectCPBrand`;
-    formBrand.target = 'pisdesk_session_frame'; // Se ejecuta en el iframe oculto
+    const inputUrl = document.createElement('input');
+    inputUrl.type = 'hidden';
+    inputUrl.name = 'url';
+    inputUrl.value = clean;
+    form.appendChild(inputUrl);
 
     const inputBrand = document.createElement('input');
     inputBrand.type = 'hidden';
     inputBrand.name = 'cpBrand';
     inputBrand.value = detectedBrand;
-    formBrand.appendChild(inputBrand);
-    document.body.appendChild(formBrand);
+    form.appendChild(inputBrand);
 
-    // Enviar el seteo de marca en segundo plano
-    formBrand.submit();
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
 
-    // 4. Pequeña pausa (350ms) para que el servidor de PISDesk reciba y asigne la cookie de sesión
-    setTimeout(() => {
-      logBox.textContent = 'Enviando URL a inspeccionar...';
-
-      // 5. Crear el formulario 2: Inspección final (se abre en la pestaña visible)
-      const formInspect = document.createElement('form');
-      formInspect.method = 'POST';
-      formInspect.action = `${PISDESK_BASE}${targetFormaction}`;
-      formInspect.target = targetWindowName; // Abre o reutiliza la pestaña nueva
-
-      const inputUrl = document.createElement('input');
-      inputUrl.type = 'hidden';
-      inputUrl.name = 'url';
-      inputUrl.value = clean;
-      formInspect.appendChild(inputUrl);
-
-      document.body.appendChild(formInspect);
-
-      // Abre la ventana y envía el POST final con la URL
-      window.open('', targetWindowName);
-      formInspect.submit();
-
-      // Limpieza de elementos temporales
-      formBrand.remove();
-      formInspect.remove();
-      hiddenIframe.remove();
-
-      logBox.textContent = '✅ Pestaña de inspección cargada con éxito.';
-    }, 400);
+    inlineFrame.onload = () => {
+      btnFire.disabled = false;
+      logBox.textContent = '✅ Vista previa cargada con éxito en el visor.';
+    };
   });
 }
