@@ -21,9 +21,9 @@ export function initPistolModule(container, sourceUrl) {
 
   container.innerHTML = `
     <div class="pistol-form">
-      <div class="auth-bar">
-        <span class="auth-status-text">¿Primera vez hoy o sesión expirada?</span>
-        <button id="btn-login-pisdesk" class="auth-btn" title="Inicia la sesión IAP de Google/Colgate en segundo plano">
+      <div class="auth-bar" style="display:flex; justify-content:space-between; align-items:center; background:#141f33; border:1px solid #1e293b; border-radius:6px; padding:8px 10px; margin-bottom:12px;">
+        <span style="font-size:11px; color:#94a3b8;">¿Sesión IAP inactiva o expirada?</span>
+        <button id="btn-login-pisdesk" type="button" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:600; cursor:pointer;">
           🔑 Iniciar Sesión PISDesk
         </button>
       </div>
@@ -43,16 +43,15 @@ export function initPistolModule(container, sourceUrl) {
 
       <div id="pistol-log" class="log-console">Listo para cargar vista previa.</div>
 
-      <!-- Visor Integrado -->
-      <div id="frame-wrapper" class="frame-wrapper" style="display: none;">
-        <div class="frame-header">
-          <span class="frame-title">🖥️ Vista Previa PISDesk</span>
+      <div id="frame-wrapper" class="frame-wrapper" style="display: none; margin-top:14px; border-top:1px solid #334155; padding-top:12px;">
+        <div class="frame-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-weight:600; font-size:11px; color:#38bdf8;">🖥️ Vista Previa PISDesk</span>
           <div style="display:flex; gap:6px; align-items:center;">
-            <button id="btn-refresh-frame" class="mini-btn" title="Recargar vista">🔄</button>
-            <span class="frame-badge">${detectedBrand}</span>
+            <button id="btn-refresh-frame" type="button" style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;" title="Recargar vista">🔄</button>
+            <span class="frame-badge" style="font-size:10px; background:#1e293b; border:1px solid #334155; padding:2px 6px; border-radius:4px; color:#94a3b8;">${detectedBrand}</span>
           </div>
         </div>
-        <iframe id="pisdesk-inline-frame" name="pisdesk_inline_frame" class="inline-frame"></iframe>
+        <iframe id="pisdesk-inline-frame" name="pisdesk_inline_frame" class="inline-frame" style="width:100%; height:420px; background:#fff; border:1px solid #334155; border-radius:6px; box-sizing:border-box;"></iframe>
       </div>
     </div>
   `;
@@ -64,26 +63,25 @@ export function initPistolModule(container, sourceUrl) {
   const frameWrapper = container.querySelector('#frame-wrapper');
   const inlineFrame = container.querySelector('#pisdesk-inline-frame');
 
-  // Función para abrir popup de login IAP
+  // Abre la ventana de login corporativo
   btnLogin.addEventListener('click', () => {
-    logBox.textContent = 'Abriendo inicio de sesión en PISDesk...';
-    const authWin = window.open(PISDESK_BASE, 'PISDesk_Auth_Window', 'width=550,height=650');
+    logBox.textContent = 'Abriendo ventana de autenticación PISDesk...';
+    const authWin = window.open(PISDESK_BASE, 'PISDesk_Auth_Window', 'width=600,height=700');
     
     if (!authWin) {
-      logBox.textContent = '⚠️ Permite popups en el navegador para autenticar.';
+      logBox.textContent = '⚠️ Permite popups en tu navegador para autenticar.';
       return;
     }
 
-    // Monitorear si el popup se cerró tras autenticar
-    const checkClosed = setInterval(() => {
+    const checkInterval = setInterval(() => {
       if (authWin.closed) {
-        clearInterval(checkClosed);
-        logBox.textContent = '✅ Sesión lista. Ya puedes inspeccionar en el visor.';
+        clearInterval(checkInterval);
+        logBox.textContent = '✅ Ventana cerrada. Haz clic en "🚀 Inspeccionar en Visor" o "🔄".';
       }
     }, 500);
   });
 
-  const sendInspectionRequest = () => {
+  const sendInspection = () => {
     btnFire.disabled = true;
     logBox.textContent = 'Enviando petición a PISDesk...';
     frameWrapper.style.display = 'block';
@@ -116,12 +114,10 @@ export function initPistolModule(container, sourceUrl) {
 
     inlineFrame.onload = () => {
       btnFire.disabled = false;
-      logBox.innerHTML = `
-        <span>✅ Vista procesada. Si ves error de "empty token", pulsa <strong>🔑 Iniciar Sesión PISDesk</strong> arriba.</span>
-      `;
+      logBox.innerHTML = '<span>✅ Petición procesada en el visor.</span>';
     };
   };
 
-  btnFire.addEventListener('click', sendInspectionRequest);
-  btnRefresh.addEventListener('click', sendInspectionRequest);
+  btnFire.addEventListener('click', sendInspection);
+  btnRefresh.addEventListener('click', sendInspection);
 }
