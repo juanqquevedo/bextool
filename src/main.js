@@ -1,5 +1,6 @@
 import cssContent from './styles.css?inline';
 import { initPistolModule } from './modules/pistol.js';
+import { initFoldersModule } from './modules/assets.js';
 
 (function main() {
   const HOST_ID = '__qa_command_center_host__';
@@ -33,13 +34,11 @@ import { initPistolModule } from './modules/pistol.js';
     </div>
     <div class="tool-tabs">
       <button class="tab-btn active" data-tab="pistol">Pistol</button>
-      <button class="tab-btn" data-tab="modulo2">Módulo 2</button>
+      <button class="tab-btn" data-tab="modulo2">Assets Folders</button>
     </div>
     <div class="tool-body">
       <div class="tab-content active" id="view-pistol"></div>
-      <div class="tab-content" id="view-modulo2">
-        <p class="placeholder-text">Próximamente...</p>
-      </div>
+      <div class="tab-content" id="view-modulo2"></div>
     </div>
   `;
   shadow.appendChild(container);
@@ -62,8 +61,13 @@ import { initPistolModule } from './modules/pistol.js';
     });
   });
 
-  // Inicializar Pistol con la URL de la página actual
   const sourceUrl = window.location.href;
+
+  // Inicializar Módulo 1 (Pistol)
   const pistolContainer = shadow.getElementById('view-pistol');
   initPistolModule(pistolContainer, sourceUrl);
+
+  // Inicializar Módulo 2 (Verificador de Carpetas en content/dam)
+  const foldersContainer = shadow.getElementById('view-modulo2');
+  initFoldersModule(foldersContainer);
 })();
