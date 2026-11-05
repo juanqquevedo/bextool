@@ -28,7 +28,7 @@ import { initPistolModule } from './modules/pistol.js';
   container.className = 'tool-window';
   container.innerHTML = `
     <div class="tool-header">
-      <div class="tool-title">⚡ QA Command Center</div>
+      <div class="tool-title">⚡ BEX Tool</div>
       <button class="tool-close-btn" id="btn-close-widget" title="Cerrar panel">✕</button>
     </div>
     <div class="tool-tabs">
