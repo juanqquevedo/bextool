@@ -65,6 +65,21 @@ export function initPistolModule(container, sourceUrl) {
   const frameWrapper = container.querySelector('#frame-wrapper');
   const inlineFrame = container.querySelector('#pisdesk-inline-frame');
 
+  // --- Message Handling for Iframe Communication ---
+  function handleFrameMessage(event) {
+    // Security check: Ensure the message is from the expected source (PISDesk domain)
+    if (event.origin !== PISDESK_BASE) {
+      return;
+    }
+    
+    const data = event.data;
+    if (data && data.type === 'INPUT_VALUE') {
+      // Display the received input value in the log box
+      logBox.innerHTML += `<br><span style="color: #38bdf8;">[Visor Data Received]: ${data.label}: ${data.value}</span>`;
+    }
+  }
+  // -------------------------------------------------
+
   // Autenticación IAP con apertura y cierre automático
   btnLogin.addEventListener('click', () => {
     logBox.textContent = 'Iniciando autenticación en segundo plano...';
@@ -129,7 +144,9 @@ export function initPistolModule(container, sourceUrl) {
 
     inlineFrame.onload = () => {
       btnFire.disabled = false;
-      logBox.innerHTML = '<span>✅ Vista procesada en el visor.</span>';
+      logBox.innerHTML = '<span style="color: #38bdf8;">✅ Vista procesada en el visor.</span>';
+      // Set up message listener once the frame is loaded
+      inlineFrame.contentWindow.addEventListener('message', handleFrameMessage);
     };
   };
 
