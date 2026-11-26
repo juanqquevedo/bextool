@@ -62,6 +62,7 @@ import { initFoldersModule } from './modules/assets.js';
   });
 
   const sourceUrl = window.location.href;
+  const hasPendingJiraBug = window.location.hash.startsWith('#bextool_bug=');
 
   // Inicializar Módulo 1 (Pistol)
   const pistolContainer = shadow.getElementById('view-pistol');
@@ -70,4 +71,9 @@ import { initFoldersModule } from './modules/assets.js';
   // Inicializar Módulo 2 (Verificador de Carpetas en content/dam)
   const foldersContainer = shadow.getElementById('view-modulo2');
   initFoldersModule(foldersContainer);
+
+  // Si venimos de una auditoría hacia Jira, abrir directamente el tab Assets Folders
+  if (hasPendingJiraBug || window.location.hostname.includes('atlassian.net')) {
+    shadow.querySelector('[data-tab="modulo2"]')?.click();
+  }
 })();
